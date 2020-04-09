@@ -142,7 +142,7 @@ export const tokenize = (input: string) => {
 
   const loc: Loc = { line: 1, column: 1 };
   let output: AnyToken[] = [];
-  let buffer: string[] = [];
+  const buffer: string[] = [];
   let bufLoc: Loc | null = null;
   let inTag = false;
   let pos = 0;
@@ -244,7 +244,7 @@ export const tokenize = (input: string) => {
           inTag = false;
           output = [...output, ...tokenizeInTag(input, buf2str(), loc), close];
           pos += 2;
-          buffer = [];
+          buffer.length = 0;
         } else {
           buffer.push(str);
         }
@@ -270,7 +270,7 @@ export const tokenize = (input: string) => {
           output = [...output, ...tokenizeInTag(input, buf2str(), loc), close];
           pos++;
           loc.column++;
-          buffer = [];
+          buffer.length = 0;
         } else {
           buffer.push(str);
         }
