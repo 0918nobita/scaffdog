@@ -152,24 +152,25 @@ export const tokenize = (input: string) => {
 
   const buf2str = () => buffer.join('');
 
-  const consumeBuffer = () => {
-    if (buffer.length > 0) {
-      output.push(
-        createToken(
-          TokenType.STRING,
-          buf2str(),
-          bufLoc != null
-            ? bufLoc
-            : {
-                line: 1,
-                column: 1,
-              },
-          { ...loc, column: loc.column - 1 },
-        ),
-      );
-      buffer = [];
-      bufLoc = null;
-    }
+  const consumeBuffer = (): void => {
+    if (buffer.length === 0) return;
+
+    output.push(
+      createToken(
+        TokenType.STRING,
+        buf2str(),
+        bufLoc != null
+          ? bufLoc
+          : {
+              line: 1,
+              column: 1,
+            },
+        { ...loc, column: loc.column - 1 },
+      ),
+    );
+
+    buffer.length = 0;
+    bufLoc = null;
   };
 
   while (!endOfSource(pos)) {
