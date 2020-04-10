@@ -15,17 +15,13 @@ const unexpected = (input: string, loc: Loc) => new SyntaxError(ErrorType.UNEXPE
 
 const unclosed = (input: string, tokens: AnyToken[]) => {
   const open = tokens.find((token) => token.type === TokenType.OPEN_TAG);
-  const err =
-    open != null
-      ? new SyntaxError(ErrorType.UNCLOSED, input, open.start, open.end)
-      : new SyntaxError(ErrorType.UNCLOSED, input, { line: 1, column: 1 }, { line: 1, column: 1 });
-
-  throw err;
+  return open != null
+    ? new SyntaxError(ErrorType.UNCLOSED, input, open.start, open.end)
+    : new SyntaxError(ErrorType.UNCLOSED, input, { line: 1, column: 1 }, { line: 1, column: 1 });
 };
 
-const unopened = (input: string, token: Token<TokenType.CLOSE_TAG>) => {
-  throw new SyntaxError(ErrorType.UNOPEND, input, token.start, token.end);
-};
+const unopened = (input: string, token: Token<TokenType.CLOSE_TAG>) =>
+  new SyntaxError(ErrorType.UNOPEND, input, token.start, token.end);
 
 const parseNumeric = (value: string) => Number(value);
 
@@ -117,7 +113,7 @@ const tokenizeInTag = (source: string, input: string, loc: Loc) => {
               );
               pos++;
             } else {
-              unexpected(source, loc);
+              throw unexpected(source, loc);
             }
             break;
 
@@ -126,12 +122,12 @@ const tokenizeInTag = (source: string, input: string, loc: Loc) => {
             break;
 
           default:
-            unexpected(source, loc);
+            throw unexpected(source, loc);
         }
         break;
 
       default:
-        unexpected(source, loc);
+        throw unexpected(source, loc);
     }
 
     pos++;
@@ -184,7 +180,7 @@ export const tokenize = (input: string) => {
       case '{':
         if (lookahead() === '{') {
           if (inTag) {
-            unclosed(input, output);
+            throw unclosed(input, output);
           }
 
           inTag = true;
@@ -242,7 +238,7 @@ export const tokenize = (input: string) => {
           );
 
           if (!inTag) {
-            unopened(input, close);
+            throw unopened(input, close);
           }
 
           inTag = false;
@@ -267,7 +263,7 @@ export const tokenize = (input: string) => {
           );
 
           if (!inTag) {
-            unopened(input, close);
+            throw unopened(input, close);
           }
 
           inTag = false;
@@ -294,7 +290,7 @@ export const tokenize = (input: string) => {
   }
 
   if (inTag) {
-    unclosed(input, output);
+    throw unclosed(input, output);
   }
 
   consumeBuffer();
