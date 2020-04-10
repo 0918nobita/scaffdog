@@ -11,9 +11,7 @@ type EsprimaToken = {
   };
 };
 
-const unexpected = (input: string, loc: Loc) => {
-  throw new SyntaxError(ErrorType.UNEXPECTED, input, loc, loc);
-};
+const unexpected = (input: string, loc: Loc) => new SyntaxError(ErrorType.UNEXPECTED, input, loc, loc);
 
 const unclosed = (input: string, tokens: AnyToken[]) => {
   const open = tokens.find((token) => token.type === TokenType.OPEN_TAG);
@@ -31,17 +29,23 @@ const unopened = (input: string, token: Token<TokenType.CLOSE_TAG>) => {
 
 const parseNumeric = (value: string) => Number(value);
 
+const tokenizeUsingEsprima = (source: string, input: string): esprima.Token[] | SyntaxError => {
+  try {
+    return esprima.tokenize(input, { loc: true });
+  } catch (e) {
+    return unexpected(source, { line: e.lineNumber - 1, column: e.index - input.length });
+  }
+};
+
 const tokenizeInTag = (source: string, input: string, loc: Loc) => {
   const output = [];
-  let tokens: EsprimaToken[] = [];
 
-  try {
-    tokens = esprima.tokenize(input, { loc: true }) as any;
-  } catch (e) {
-    loc.line += e.lineNumber - 1;
-    loc.column += e.index - input.length;
-    unexpected(source, loc);
+  const result = tokenizeUsingEsprima(source, input);
+  if (result instanceof SyntaxError) {
+    throw result;
   }
+
+  const tokens = result as EsprimaToken[];
 
   const size = input.length;
   const length = tokens.length;
